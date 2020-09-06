@@ -117,8 +117,17 @@
     -->
 	<string name="hello_world">Hello Square World!</string>
 	<string name="packageSelect">SelectedPackage</string>
-	<string name="packageSelect1">SelectedPackage1</string>
-	<string name="packageSelect2">SelectedPackage2</string>
+	<string name="bluePackageSelect1">BlueSelectedPackage1</string>
+	<string name="bluePackageSelect2">BlueSelectedPackage2</string>
 	<string name="bluetoothSelect">SelectedBluetooth</string>
 	<string name="accessibility">백그라운드에서 앱 실행</string>
+	<string name="powerPackageSelect1">PowerSelectedPackage1</string>
+	<string name="powerPackageSelect2">PowerSelectedPackage2</string>
+
+	<string name="runOnConnected">runConnected</string>
+	<string name="runOnDisconnected">runDisconnected</string>
+
+	<string name="runOnCharged">runCharged</string>
+	<string name="runOnDischarged">runDisCharged</string>
+
 </resources>

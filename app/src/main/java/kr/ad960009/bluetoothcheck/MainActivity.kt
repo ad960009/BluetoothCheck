@@ -13,6 +13,7 @@ import android.os.Process
 import android.provider.Settings
 import android.view.accessibility.AccessibilityManager
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
@@ -20,6 +21,8 @@ import androidx.preference.PreferenceManager
 
 
 class MainActivity : AppCompatActivity() {
+
+	lateinit var SettingValues: PreferenceValues
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -29,22 +32,16 @@ class MainActivity : AppCompatActivity() {
 			setAccessibilityPermissions();
 		}
 
-		val preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		val selectedPackage1 =
-			preferences.getString(getString(R.string.packageSelect1), "") as String
-		val selectedPackage2 =
-			preferences.getString(getString(R.string.packageSelect2), "") as String
-		val selectedBluetooth =
-			preferences.getString(getString(R.string.bluetoothSelect), "") as String
+		SettingValues = PreferenceValues(this)
 
-		val appSelectTV1 = findViewById<TextView>(R.id.Select1)
-		appSelectTV1.setOnClickListener {
+		val blueAppSelectTV1 = findViewById<TextView>(R.id.BlueSelect1)
+		blueAppSelectTV1.setOnClickListener {
 			val intent = Intent(this@MainActivity, ApplicationListActivity::class.java).also {
 				startActivityForResult(it, 1)
 			}
 		}
-		val appSelectTV2 = findViewById<TextView>(R.id.Select2)
-		appSelectTV2.setOnClickListener {
+		val blueAppSelectTV2 = findViewById<TextView>(R.id.BlueSelect2)
+		blueAppSelectTV2.setOnClickListener {
 			val intent = Intent(this@MainActivity, ApplicationListActivity::class.java).also {
 				startActivityForResult(it, 2)
 			}
@@ -56,46 +53,84 @@ class MainActivity : AppCompatActivity() {
 			}
 		}
 
+		val powerAppSelectTV1 = findViewById<TextView>(R.id.PowerSelect1)
+		powerAppSelectTV1.setOnClickListener {
+			val intent = Intent(this@MainActivity, ApplicationListActivity::class.java).also {
+				startActivityForResult(it, 3)
+			}
+		}
+		val powerAppSelectTV2 = findViewById<TextView>(R.id.PowerSelect2)
+		powerAppSelectTV2.setOnClickListener {
+			val intent = Intent(this@MainActivity, ApplicationListActivity::class.java).also {
+				startActivityForResult(it, 4)
+			}
+		}
+
+		val runOnConnectedCheck = findViewById<CheckBox>(R.id.runOnConnected)
+		val runOnDisconnectedCheck = findViewById<CheckBox>(R.id.runOnDisconnected)
+
+		val runOnChargedCheck = findViewById<CheckBox>(R.id.runOnCharged)
+		val runOnDischargedCheck = findViewById<CheckBox>(R.id.runOnDischarged)
+
 		val saveButton = findViewById<Button>(R.id.save_button)
-		if (!selectedPackage1.isEmpty()) {
-			appSelectTV1.text = selectedPackage1
-		}
-		if (!selectedPackage2.isEmpty()) {
-			appSelectTV2.text = selectedPackage2
-		}
-		if (!selectedBluetooth.isEmpty()) {
-			bluetoothSelectTV.text = selectedBluetooth
-		}
+
+		blueAppSelectTV1.text = SettingValues.BluetoothPackage1
+		blueAppSelectTV2.text = SettingValues.BluetoothPackage2
+		bluetoothSelectTV.text = SettingValues.BluetoothName
+
+		powerAppSelectTV1.text = SettingValues.PowerPackage1
+		powerAppSelectTV2.text = SettingValues.PowerPackage2
+
+		runOnConnectedCheck.isChecked = SettingValues.RunOnConnected
+		runOnDisconnectedCheck.isChecked = SettingValues.RunOnDisconnected
+
+		runOnChargedCheck.isChecked = SettingValues.RunOnCharged
+		runOnDischargedCheck.isChecked = SettingValues.RunOnDischarged
 
 		saveButton.setOnClickListener {
-			preferences.edit {
-				var selectedPackage1 = ""
-				var selectedPackage2 = ""
-				var selectedBluetooth = ""
-				if (appSelectTV1.text != null)
-					selectedPackage1 = appSelectTV1.text.toString()
-				if (appSelectTV2.text != null)
-					selectedPackage2 = appSelectTV2.text.toString()
-				if (bluetoothSelectTV.text != null)
-					selectedBluetooth = bluetoothSelectTV.text.toString()
-				putString(getString(R.string.packageSelect1), selectedPackage1)
-				putString(getString(R.string.packageSelect2), selectedPackage2)
-				putString(getString(R.string.bluetoothSelect), selectedBluetooth)
-				commit()
-			}
+			SettingValues.BluetoothPackage1 = blueAppSelectTV1.text.toString()
+			SettingValues.BluetoothPackage2 = blueAppSelectTV2.text.toString()
+			SettingValues.BluetoothName = bluetoothSelectTV.text.toString()
+
+			SettingValues.PowerPackage1 = powerAppSelectTV1.text.toString()
+			SettingValues.PowerPackage2 = powerAppSelectTV2.text.toString()
+
+			SettingValues.RunOnConnected = runOnConnectedCheck.isChecked
+			SettingValues.RunOnDisconnected = runOnDisconnectedCheck.isChecked
+
+			SettingValues.RunOnCharged = runOnChargedCheck.isChecked
+			SettingValues.RunOnDischarged = runOnDischargedCheck.isChecked
+			SettingValues.Save()
 		}
+
 		val clearButton = findViewById<Button>(R.id.clear_button)
 		clearButton.setOnClickListener {
-			preferences.edit {
-				putString(getString(R.string.packageSelect1), "")
-				putString(getString(R.string.packageSelect2), "")
-				putString(getString(R.string.bluetoothSelect), "")
-				appSelectTV1.text = ""
-				appSelectTV2.text = ""
-				bluetoothSelectTV.text = ""
+			blueAppSelectTV1.text = ""
+			blueAppSelectTV2.text = ""
+			bluetoothSelectTV.text = ""
 
-				commit()
-			}
+			powerAppSelectTV1.text = ""
+			powerAppSelectTV2.text = ""
+
+			runOnConnectedCheck.isChecked = false
+			runOnDisconnectedCheck.isChecked = false
+
+			runOnChargedCheck.isChecked = false
+			runOnDischargedCheck.isChecked = false
+
+			SettingValues.BluetoothPackage1 = blueAppSelectTV1.text.toString()
+			SettingValues.BluetoothPackage2 = blueAppSelectTV2.text.toString()
+			SettingValues.BluetoothName = bluetoothSelectTV.text.toString()
+
+			SettingValues.PowerPackage1 = powerAppSelectTV1.text.toString()
+			SettingValues.PowerPackage2 = powerAppSelectTV2.text.toString()
+
+			SettingValues.RunOnConnected = runOnConnectedCheck.isChecked
+			SettingValues.RunOnDisconnected = runOnDisconnectedCheck.isChecked
+
+			SettingValues.RunOnCharged = runOnChargedCheck.isChecked
+			SettingValues.RunOnDischarged = runOnDischargedCheck.isChecked
+			SettingValues.Save()
 		}
 
 		val serviceIntent = Intent(this, ForegroundService::class.java)
@@ -106,19 +141,43 @@ class MainActivity : AppCompatActivity() {
 		if (resultCode == RESULT_OK) {
 			if (requestCode == 1) {
 				data?.getStringExtra(getString(R.string.packageSelect)).let {
-					val tv = findViewById<TextView>(R.id.Select1)
-					tv.text = it
+					val tv = findViewById<TextView>(R.id.BlueSelect1)
+					if (it == null)
+						tv.text = ""
+					else
+						tv.text = it
 				}
-			}
-			if (requestCode == 2) {
+			} else if (requestCode == 2) {
 				data?.getStringExtra(getString(R.string.packageSelect)).let {
-					val tv = findViewById<TextView>(R.id.Select2)
-					tv.text = it
+					val tv = findViewById<TextView>(R.id.BlueSelect2)
+					if (it == null)
+						tv.text = ""
+					else
+						tv.text = it
 				}
 			} else if (requestCode == 0) {
 				data?.getStringExtra(getString(R.string.bluetoothSelect)).let {
 					val tv = findViewById<TextView>(R.id.bluetoothName)
-					tv.text = it
+					if (it == null)
+						tv.text = ""
+					else
+						tv.text = it
+				}
+			} else if (requestCode == 3) {
+				data?.getStringExtra(getString(R.string.packageSelect)).let {
+					val tv = findViewById<TextView>(R.id.PowerSelect1)
+					if (it == null)
+						tv.text = ""
+					else
+						tv.text = it
+				}
+			} else if (requestCode == 4) {
+				data?.getStringExtra(getString(R.string.packageSelect)).let {
+					val tv = findViewById<TextView>(R.id.PowerSelect2)
+					if (it == null)
+						tv.text = ""
+					else
+						tv.text = it
 				}
 			}
 		}
@@ -158,5 +217,62 @@ class MainActivity : AppCompatActivity() {
 				startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
 				return@OnClickListener
 			}).create().show()
+	}
+}
+
+class PreferenceValues(context: Context) {
+	var RunOnConnected = false
+	var RunOnDisconnected = false
+	var BluetoothPackage1 = ""
+	var BluetoothPackage2 = ""
+	var BluetoothName = ""
+	var RunOnCharged = false
+	var RunOnDischarged = false
+	var PowerPackage1 = ""
+	var PowerPackage2 = ""
+
+	val context: Context;
+
+	fun getString(key: Int): String {
+		return context.getString(key)
+	}
+
+	init {
+		this.context = context;
+
+		val preference = PreferenceManager.getDefaultSharedPreferences(context);
+
+		RunOnConnected = preference.getBoolean(getString(R.string.runOnConnected), true)
+		RunOnDisconnected = preference.getBoolean(getString(R.string.runOnDisconnected), true)
+		RunOnCharged = preference.getBoolean(getString(R.string.runOnCharged), true)
+		RunOnDischarged = preference.getBoolean(getString(R.string.runOnDischarged), true)
+
+		BluetoothPackage1 =
+			preference.getString(getString(R.string.bluePackageSelect1), "") as String
+		BluetoothPackage2 =
+			preference.getString(getString(R.string.bluePackageSelect2), "") as String
+		BluetoothName = preference.getString(getString(R.string.bluePackageSelect1), "") as String
+
+		PowerPackage1 = preference.getString(getString(R.string.powerPackageSelect1), "") as String
+		PowerPackage2 = preference.getString(getString(R.string.powerPackageSelect2), "") as String
+	}
+
+	fun Save() {
+		val preference = PreferenceManager.getDefaultSharedPreferences(context);
+		preference.edit {
+			putBoolean(getString(R.string.runOnConnected), RunOnConnected)
+			putBoolean(getString(R.string.runOnDisconnected), RunOnDisconnected)
+			putBoolean(getString(R.string.runOnCharged), RunOnCharged)
+			putBoolean(getString(R.string.runOnDischarged), RunOnDischarged)
+
+			putString(getString(R.string.bluePackageSelect1), BluetoothPackage1)
+			putString(getString(R.string.bluePackageSelect2), BluetoothPackage2)
+			putString(getString(R.string.bluetoothSelect), BluetoothName)
+
+			putString(getString(R.string.powerPackageSelect1), PowerPackage1)
+			putString(getString(R.string.powerPackageSelect2), PowerPackage2)
+
+			commit()
+		}
 	}
 }

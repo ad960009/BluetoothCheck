@@ -22,23 +22,67 @@
 				android:text="@string/AppName"></TextView>
 
 			<TextView
-				android:id="@+id/Select1"
+				android:id="@+id/BlueSelect1"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
+				android:textSize="@dimen/text_default_size"
 				android:hint="@string/target_activity"></TextView>
 
 			<TextView
-				android:id="@+id/Select2"
+				android:id="@+id/BlueSelect2"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
+				android:textSize="@dimen/text_default_size"
 				android:hint="@string/target_activity"></TextView>
-
 
 			<TextView
 				android:id="@+id/bluetoothName"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
+				android:textSize="@dimen/text_default_size"
 				android:hint="Select bluetooth name"></TextView>
+
+			<CheckBox
+				android:id="@+id/runOnConnected"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:text="Run on bluetooth connected"
+				android:textSize="@dimen/text_default_size"></CheckBox>
+
+			<CheckBox
+				android:id="@+id/runOnDisconnected"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:text="Run on bluetooth disconnected"
+				android:textSize="@dimen/text_default_size"></CheckBox>
+
+			<TextView
+				android:id="@+id/PowerSelect1"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:hint="@string/target_activity"
+				android:textSize="@dimen/text_default_size"></TextView>
+
+			<TextView
+				android:id="@+id/PowerSelect2"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:hint="@string/target_activity"
+				android:textSize="@dimen/text_default_size"></TextView>
+
+			<CheckBox
+				android:id="@+id/runOnCharged"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:text="Run on Power connected"
+				android:textSize="@dimen/text_default_size"></CheckBox>
+
+			<CheckBox
+				android:id="@+id/runOnDischarged"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:text="Run on Power disconnected"
+				android:textSize="@dimen/text_default_size"></CheckBox>
 
 			<Button
 				android:id="@+id/save_button"
@@ -53,6 +97,8 @@
 				android:layout_height="wrap_content"
 				android:layout_gravity="center"
 				android:text="Clear"></Button>
+
+
 		</LinearLayout>
 	</FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

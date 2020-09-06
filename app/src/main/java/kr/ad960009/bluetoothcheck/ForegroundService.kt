@@ -6,12 +6,14 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import androidx.core.app.NotificationCompat
 
 class ForegroundService : AccessibilityService() {
 	val TAG = "ad960009"
+	lateinit var receiver: PowerConnectReceiver
 
 	override fun onAccessibilityEvent(p0: AccessibilityEvent?) {
 
@@ -22,9 +24,16 @@ class ForegroundService : AccessibilityService() {
 	}
 
 	override fun onCreate() {
+		super.onCreate()
+
 		SetForeground()
 		Log.d(TAG, "onCreate")
-		super.onCreate()
+
+		receiver = PowerConnectReceiver()
+		val filter = IntentFilter()
+		filter.addAction(Intent.ACTION_POWER_CONNECTED)
+		filter.addAction(Intent.ACTION_POWER_DISCONNECTED)
+		registerReceiver(receiver, filter)
 	}
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -51,6 +60,7 @@ class ForegroundService : AccessibilityService() {
 
 	override fun onDestroy() {
 		Log.d(TAG, "onDestroy")
+		unregisterReceiver(receiver)
 		super.onDestroy()
 	}
 

@@ -2,14 +2,12 @@ package kr.ad960009.bluetoothcheck
 
 import android.app.job.JobInfo
 import android.app.job.JobScheduler
-import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.preference.PreferenceManager
 import java.util.concurrent.TimeUnit
 
 class BluetoothReceiver : BroadcastReceiver() {
@@ -27,13 +25,8 @@ class BluetoothReceiver : BroadcastReceiver() {
 		}
 
 		// This method is called when the BroadcastReceiver is receiving an Intent broadcast.
-		val preference = PreferenceManager.getDefaultSharedPreferences(context)
-		val selectedPackage1 =
-			preference.getString(context.getString(R.string.packageSelect1), "") as String
-		val selectedPackage2 =
-			preference.getString(context.getString(R.string.packageSelect2), "") as String
-		val selectedBluetooth =
-			preference.getString(context.getString(R.string.bluetoothSelect), "") as String
+
+		val SettingValues = PreferenceValues(context)
 
 		val action = intent.getAction() ?: return
 		val device: BluetoothDevice? =
@@ -43,35 +36,77 @@ class BluetoothReceiver : BroadcastReceiver() {
 
 		Log.d("ad960009", "bluetooth recv $action $name")
 
-		if (selectedPackage1.isEmpty())
+		if (SettingValues.BluetoothPackage1.isEmpty())
 			return
-		if (!name.equals(selectedBluetooth))
+		if (!name.equals(SettingValues.BluetoothName))
 			return
 
 		val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
 		val componentName = ComponentName(context, MyService::class.java)
 
-		if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-
-		} else if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
-			// Job Add
-			val job = JobInfo.Builder(MyService.APP_START1, componentName)
-				.setMinimumLatency(TimeUnit.SECONDS.toMillis(shortTerm))
-				.setOverrideDeadline(TimeUnit.SECONDS.toMillis(shortTerm * 2))
-				.build()
-			jobScheduler.cancelAll();
-			jobScheduler.schedule(job)
-		} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-
-		} else if (BluetoothDevice.ACTION_ACL_DISCONNECT_REQUESTED.equals(action)) {
-		} else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
-			// Job Add
-			val job = JobInfo.Builder(MyService.DELAYED_CHECK, componentName)
-				.setMinimumLatency(TimeUnit.MINUTES.toMillis(longTerm))
-				.setOverrideDeadline(TimeUnit.MINUTES.toMillis(longTerm * 2)).build()
-			jobScheduler.cancelAll();
-			jobScheduler.schedule(job)
+		when (action) {
+			BluetoothDevice.ACTION_ACL_CONNECTED -> {
+				if (!SettingValues.RunOnConnected)
+					return
+				val job = JobInfo.Builder(MyService.BLUE_APP_START1, componentName)
+					.setMinimumLatency(TimeUnit.SECONDS.toMillis(shortTerm))
+					.setOverrideDeadline(TimeUnit.SECONDS.toMillis(shortTerm * 2))
+					.build()
+				jobScheduler.cancel(MyService.BLUE_DELAYED_CHECK)
+				jobScheduler.cancel(MyService.BLUE_APP_START1)
+				jobScheduler.cancel(MyService.BLUE_APP_START2)
+				jobScheduler.schedule(job)
+			}
+			BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
+				if (!SettingValues.RunOnDisconnected)
+					return
+				val job = JobInfo.Builder(MyService.BLUE_DELAYED_CHECK, componentName)
+					.setMinimumLatency(TimeUnit.MINUTES.toMillis(longTerm))
+					.setOverrideDeadline(TimeUnit.MINUTES.toMillis(longTerm * 2)).build()
+				jobScheduler.cancel(MyService.BLUE_DELAYED_CHECK)
+				jobScheduler.cancel(MyService.BLUE_APP_START1)
+				jobScheduler.cancel(MyService.BLUE_APP_START2)
+				jobScheduler.schedule(job)
+			}
 		}
+	}
+}
 
+class PowerConnectReceiver : BroadcastReceiver() {
+	override fun onReceive(context: Context, intent: Intent) {
+
+		val action = intent.getAction() ?: return
+
+		val SettingValues = PreferenceValues(context)
+
+		val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+		val componentName = ComponentName(context, MyService::class.java)
+
+		when (action) {
+			Intent.ACTION_POWER_CONNECTED -> {
+				if (!SettingValues.RunOnCharged)
+					return
+				val job = JobInfo.Builder(MyService.POWER_APP_START1, componentName)
+					.setMinimumLatency(TimeUnit.SECONDS.toMillis(BluetoothReceiver.shortTerm))
+					.setOverrideDeadline(TimeUnit.SECONDS.toMillis(BluetoothReceiver.shortTerm * 2))
+					.build()
+				jobScheduler.cancel(MyService.POWER_DELAYED_CHECK)
+				jobScheduler.cancel(MyService.POWER_APP_START1)
+				jobScheduler.cancel(MyService.POWER_APP_START2)
+				jobScheduler.schedule(job)
+			}
+			Intent.ACTION_POWER_DISCONNECTED -> {
+				if (!SettingValues.RunOnDischarged)
+					return
+				val job = JobInfo.Builder(MyService.POWER_DELAYED_CHECK, componentName)
+					.setMinimumLatency(TimeUnit.MINUTES.toMillis(BluetoothReceiver.longTerm))
+					.setOverrideDeadline(TimeUnit.MINUTES.toMillis(BluetoothReceiver.longTerm * 2))
+					.build()
+				jobScheduler.cancel(MyService.POWER_DELAYED_CHECK)
+				jobScheduler.cancel(MyService.POWER_APP_START1)
+				jobScheduler.cancel(MyService.POWER_APP_START2)
+				jobScheduler.schedule(job)
+			}
+		}
 	}
 }
