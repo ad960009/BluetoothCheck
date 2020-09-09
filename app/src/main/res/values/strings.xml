@@ -121,6 +121,10 @@
 	<string name="bluePackageSelect2">BlueSelectedPackage2</string>
 	<string name="bluetoothSelect">SelectedBluetooth</string>
 	<string name="accessibility">백그라운드에서 앱 실행</string>
+
+	<string name="admin">화면 잠금</string>
+	<string name="adminDesc">화면 잠금</string>
+
 	<string name="powerPackageSelect1">PowerSelectedPackage1</string>
 	<string name="powerPackageSelect2">PowerSelectedPackage2</string>
 
@@ -129,5 +133,8 @@
 
 	<string name="runOnCharged">runCharged</string>
 	<string name="runOnDischarged">runDisCharged</string>
+
+	<string name="screenOff">screenOff</string>
+	<string name="appKilled">appKilled</string>
 
 </resources>

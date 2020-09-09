@@ -5,12 +5,16 @@ import android.app.AlertDialog
 import android.app.AppOpsManager
 import android.app.AppOpsManager.MODE_ALLOWED
 import android.app.AppOpsManager.OPSTR_GET_USAGE_STATS
+import android.app.admin.DeviceAdminReceiver
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
+import android.util.Log
 import android.view.accessibility.AccessibilityManager
 import android.widget.Button
 import android.widget.CheckBox
@@ -72,6 +76,8 @@ class MainActivity : AppCompatActivity() {
 		val runOnChargedCheck = findViewById<CheckBox>(R.id.runOnCharged)
 		val runOnDischargedCheck = findViewById<CheckBox>(R.id.runOnDischarged)
 
+		val screenOffCheck = findViewById<CheckBox>(R.id.screenOffAfterRun)
+
 		val saveButton = findViewById<Button>(R.id.save_button)
 
 		blueAppSelectTV1.text = SettingValues.BluetoothPackage1
@@ -87,6 +93,8 @@ class MainActivity : AppCompatActivity() {
 		runOnChargedCheck.isChecked = SettingValues.RunOnCharged
 		runOnDischargedCheck.isChecked = SettingValues.RunOnDischarged
 
+		screenOffCheck.isChecked = SettingValues.ScreenOff
+
 		saveButton.setOnClickListener {
 			SettingValues.BluetoothPackage1 = blueAppSelectTV1.text.toString()
 			SettingValues.BluetoothPackage2 = blueAppSelectTV2.text.toString()
@@ -100,6 +108,9 @@ class MainActivity : AppCompatActivity() {
 
 			SettingValues.RunOnCharged = runOnChargedCheck.isChecked
 			SettingValues.RunOnDischarged = runOnDischargedCheck.isChecked
+
+			SettingValues.ScreenOff = screenOffCheck.isChecked
+
 			SettingValues.Save()
 		}
 
@@ -118,6 +129,8 @@ class MainActivity : AppCompatActivity() {
 			runOnChargedCheck.isChecked = false
 			runOnDischargedCheck.isChecked = false
 
+			screenOffCheck.isChecked = false
+
 			SettingValues.BluetoothPackage1 = blueAppSelectTV1.text.toString()
 			SettingValues.BluetoothPackage2 = blueAppSelectTV2.text.toString()
 			SettingValues.BluetoothName = bluetoothSelectTV.text.toString()
@@ -130,7 +143,21 @@ class MainActivity : AppCompatActivity() {
 
 			SettingValues.RunOnCharged = runOnChargedCheck.isChecked
 			SettingValues.RunOnDischarged = runOnDischargedCheck.isChecked
+
+			SettingValues.ScreenOff = screenOffCheck.isChecked
+
 			SettingValues.Save()
+		}
+
+		screenOffCheck.setOnClickListener {
+			if (screenOffCheck.isChecked) {
+				if (!checkAdminPermissions()) {
+					val componentName = ComponentName(this, ShutdownConfigAdminReceiver::class.java)
+					intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+					intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
+					startActivityForResult(intent, 10)
+				}
+			}
 		}
 
 		val serviceIntent = Intent(this, ForegroundService::class.java)
@@ -218,6 +245,23 @@ class MainActivity : AppCompatActivity() {
 				return@OnClickListener
 			}).create().show()
 	}
+
+	fun checkAdminPermissions(): Boolean {
+		var deviceManger = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager;
+		val componentName = ComponentName(this, ShutdownConfigAdminReceiver::class.java)
+		val hasPermission = deviceManger.isAdminActive(componentName)
+		return hasPermission
+	}
+}
+
+class ShutdownConfigAdminReceiver : DeviceAdminReceiver() {
+	override fun onDisabled(context: Context, intent: Intent) {
+		Log.d("ad960009", "admin disabled")
+	}
+
+	override fun onEnabled(context: Context, intent: Intent) {
+		Log.d("ad960009", "admin enabled")
+	}
 }
 
 class PreferenceValues(context: Context) {
@@ -230,6 +274,8 @@ class PreferenceValues(context: Context) {
 	var RunOnDischarged = false
 	var PowerPackage1 = ""
 	var PowerPackage2 = ""
+	var ScreenOff = false
+	var appKilled = false
 
 	val context: Context;
 
@@ -251,10 +297,12 @@ class PreferenceValues(context: Context) {
 			preference.getString(getString(R.string.bluePackageSelect1), "") as String
 		BluetoothPackage2 =
 			preference.getString(getString(R.string.bluePackageSelect2), "") as String
-		BluetoothName = preference.getString(getString(R.string.bluePackageSelect1), "") as String
+		BluetoothName = preference.getString(getString(R.string.bluetoothSelect), "") as String
 
 		PowerPackage1 = preference.getString(getString(R.string.powerPackageSelect1), "") as String
 		PowerPackage2 = preference.getString(getString(R.string.powerPackageSelect2), "") as String
+		ScreenOff = preference.getBoolean(getString(R.string.screenOff), false)
+		appKilled = preference.getBoolean(getString(R.string.appKilled), false)
 	}
 
 	fun Save() {
@@ -271,6 +319,10 @@ class PreferenceValues(context: Context) {
 
 			putString(getString(R.string.powerPackageSelect1), PowerPackage1)
 			putString(getString(R.string.powerPackageSelect2), PowerPackage2)
+
+			putBoolean(getString(R.string.screenOff), ScreenOff)
+			putBoolean(getString(R.string.appKilled), appKilled)
+
 
 			commit()
 		}

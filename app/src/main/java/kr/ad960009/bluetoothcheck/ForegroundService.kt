@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 
 class ForegroundService : AccessibilityService() {
@@ -51,8 +52,10 @@ class ForegroundService : AccessibilityService() {
 				for (category in intent.categories) {
 					Log.d("ad960009", "\tcategory: $category")
 				}
+				ShowToast("App start: $pkgName")
 			} else {
 				Log.d("ad960009", "Can't start App $pkgName intent null")
+				ShowToast("App start failed: $pkgName")
 			}
 		}
 		return START_STICKY
@@ -86,6 +89,10 @@ class ForegroundService : AccessibilityService() {
 
 		builder.setContentIntent(pendingIntent)
 		startForeground(5, builder.build())
+	}
+
+	fun ShowToast(string: String) {
+		Toast.makeText(this, string, Toast.LENGTH_SHORT).show()
 	}
 
 	companion object {
