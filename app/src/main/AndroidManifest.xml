@@ -28,6 +28,7 @@
 		</service>
 
 		<activity android:name=".BluetoothSelectActivity" />
+		<activity android:name=".TimerActivity" android:launchMode="singleInstance" />
 
 		<service
 			android:name=".MyService"

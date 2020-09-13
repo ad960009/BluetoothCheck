@@ -137,4 +137,6 @@
 	<string name="screenOff">screenOff</string>
 	<string name="appKilled">appKilled</string>
 
+	<string name="TimerInfo">Kill app Timer</string>
+
 </resources>

@@ -9,14 +9,11 @@ import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.widget.Toast
+import kr.ad960009.bluetoothcheck.MyService.Companion.longTerm
+import kr.ad960009.bluetoothcheck.MyService.Companion.shortTerm
 import java.util.concurrent.TimeUnit
 
 class BluetoothReceiver : BroadcastReceiver() {
-	companion object {
-		const val longTerm: Long = 10
-		const val shortTerm: Long = 10
-	}
-
 	override fun onReceive(context: Context, intent: Intent) {
 		val SettingValues = PreferenceValues(context)
 
@@ -51,27 +48,32 @@ class BluetoothReceiver : BroadcastReceiver() {
 		when (action) {
 			BluetoothDevice.ACTION_ACL_CONNECTED -> {
 				ShowToast(context, "Recv Bluetooth Connected")
+
+				jobScheduler.cancel(MyService.Event.POWER_DELAYED_CHECK.ordinal)
+				jobScheduler.cancel(MyService.Event.BLUE_DELAYED_CHECK.ordinal)
+				jobScheduler.cancel(MyService.Event.BLUE_APP_START1.ordinal)
+				jobScheduler.cancel(MyService.Event.BLUE_APP_START2.ordinal)
+
 				if (!SettingValues.RunOnConnected)
 					return
 				val job = JobInfo.Builder(MyService.Event.BLUE_APP_START1.ordinal, componentName)
 					.setMinimumLatency(TimeUnit.SECONDS.toMillis(shortTerm))
 					.setOverrideDeadline(TimeUnit.SECONDS.toMillis(shortTerm * 2))
 					.build()
-				jobScheduler.cancel(MyService.Event.BLUE_DELAYED_CHECK.ordinal)
-				jobScheduler.cancel(MyService.Event.BLUE_APP_START1.ordinal)
-				jobScheduler.cancel(MyService.Event.BLUE_APP_START2.ordinal)
 				jobScheduler.schedule(job)
 			}
 			BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
 				ShowToast(context, "Recv Bluetooth Disconnected")
+
+				jobScheduler.cancel(MyService.Event.BLUE_DELAYED_CHECK.ordinal)
+				jobScheduler.cancel(MyService.Event.BLUE_APP_START1.ordinal)
+				jobScheduler.cancel(MyService.Event.BLUE_APP_START2.ordinal)
+
 				if (!SettingValues.RunOnDisconnected)
 					return
 				val job = JobInfo.Builder(MyService.Event.BLUE_DELAYED_CHECK.ordinal, componentName)
 					.setMinimumLatency(TimeUnit.MINUTES.toMillis(longTerm))
 					.setOverrideDeadline(TimeUnit.MINUTES.toMillis(longTerm * 2)).build()
-				jobScheduler.cancel(MyService.Event.BLUE_DELAYED_CHECK.ordinal)
-				jobScheduler.cancel(MyService.Event.BLUE_APP_START1.ordinal)
-				jobScheduler.cancel(MyService.Event.BLUE_APP_START2.ordinal)
 				jobScheduler.schedule(job)
 			}
 		}
@@ -96,30 +98,35 @@ class PowerConnectReceiver : BroadcastReceiver() {
 			Intent.ACTION_POWER_CONNECTED -> {
 				Log.d("ad960009", "Recv Power Connected")
 				ShowToast(context, "Recv Power Connected")
+
+				jobScheduler.cancel(MyService.Event.POWER_DELAYED_CHECK.ordinal)
+				jobScheduler.cancel(MyService.Event.BLUE_DELAYED_CHECK.ordinal)
+				jobScheduler.cancel(MyService.Event.POWER_APP_START1.ordinal)
+				jobScheduler.cancel(MyService.Event.POWER_APP_START2.ordinal)
+
 				if (!SettingValues.RunOnCharged)
 					return
 				val job = JobInfo.Builder(MyService.Event.POWER_APP_START1.ordinal, componentName)
-					.setMinimumLatency(TimeUnit.SECONDS.toMillis(BluetoothReceiver.shortTerm))
-					.setOverrideDeadline(TimeUnit.SECONDS.toMillis(BluetoothReceiver.shortTerm * 2))
+					.setMinimumLatency(TimeUnit.SECONDS.toMillis(shortTerm))
+					.setOverrideDeadline(TimeUnit.SECONDS.toMillis(shortTerm * 2))
 					.build()
-				jobScheduler.cancel(MyService.Event.POWER_DELAYED_CHECK.ordinal)
-				jobScheduler.cancel(MyService.Event.POWER_APP_START1.ordinal)
-				jobScheduler.cancel(MyService.Event.POWER_APP_START2.ordinal)
 				jobScheduler.schedule(job)
 			}
 			Intent.ACTION_POWER_DISCONNECTED -> {
 				Log.d("ad960009", "Recv Power Disconnected")
 				ShowToast(context, "Recv Power Disconnected")
+
+				jobScheduler.cancel(MyService.Event.POWER_DELAYED_CHECK.ordinal)
+				jobScheduler.cancel(MyService.Event.POWER_APP_START1.ordinal)
+				jobScheduler.cancel(MyService.Event.POWER_APP_START2.ordinal)
+
 				if (!SettingValues.RunOnDischarged)
 					return
 				val job =
 					JobInfo.Builder(MyService.Event.POWER_DELAYED_CHECK.ordinal, componentName)
-						.setMinimumLatency(TimeUnit.MINUTES.toMillis(BluetoothReceiver.longTerm))
-						.setOverrideDeadline(TimeUnit.MINUTES.toMillis(BluetoothReceiver.longTerm * 2))
+						.setMinimumLatency(TimeUnit.MINUTES.toMillis(longTerm))
+						.setOverrideDeadline(TimeUnit.MINUTES.toMillis(longTerm * 2))
 						.build()
-				jobScheduler.cancel(MyService.Event.POWER_DELAYED_CHECK.ordinal)
-				jobScheduler.cancel(MyService.Event.POWER_APP_START1.ordinal)
-				jobScheduler.cancel(MyService.Event.POWER_APP_START2.ordinal)
 				jobScheduler.schedule(job)
 			}
 		}

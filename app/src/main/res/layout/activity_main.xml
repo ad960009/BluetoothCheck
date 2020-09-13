@@ -88,7 +88,7 @@
 				android:id="@+id/screenOffAfterRun"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:text="Screen off when after run application"
+				android:text="Screen off when after kill application"
 				android:textSize="@dimen/text_default_size"></CheckBox>
 
 			<Button

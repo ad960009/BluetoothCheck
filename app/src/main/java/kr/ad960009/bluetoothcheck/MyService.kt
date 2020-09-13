@@ -33,11 +33,6 @@ class MyService : JobService() {
 				BlueAppStart2(SettingValues.BluetoothPackage2)
 				SettingValues.appKilled = false
 				SettingValues.Save()
-				if (SettingValues.ScreenOff) {
-					val devicePolicyManager =
-						getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-					devicePolicyManager.lockNow()
-				}
 			}
 			Event.BLUE_DELAYED_CHECK.ordinal -> {
 				SettingValues.appKilled = true
@@ -47,6 +42,8 @@ class MyService : JobService() {
 					SettingValues.BluetoothPackage1,
 					SettingValues.BluetoothPackage2
 				)
+				if (SettingValues.ScreenOff)
+					ScreenOff()
 			}
 
 			Event.POWER_APP_START1.ordinal -> {
@@ -58,11 +55,6 @@ class MyService : JobService() {
 				PowerAppStart2(SettingValues.PowerPackage2)
 				SettingValues.appKilled = false
 				SettingValues.Save()
-				if (SettingValues.ScreenOff) {
-					val devicePolicyManager =
-						getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-					devicePolicyManager.lockNow()
-				}
 			}
 			Event.POWER_DELAYED_CHECK.ordinal -> {
 				SettingValues.appKilled = true
@@ -71,6 +63,8 @@ class MyService : JobService() {
 					SettingValues.PowerPackage1,
 					SettingValues.PowerPackage2
 				)
+				if (SettingValues.ScreenOff)
+					ScreenOff()
 			}
 
 			//APP_STOP -> AppStop(selectedPackage1, selectedPackage2)
@@ -187,11 +181,24 @@ class MyService : JobService() {
 		return false
 	}
 
+	fun ScreenOff()
+	{
+		val devicePolicyManager =
+			getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
+		devicePolicyManager.lockNow()
+	}
+
 	fun ShowToast(string: String) {
 		Toast.makeText(this, string, Toast.LENGTH_SHORT).show()
 	}
 
 	enum class Event {
-		BLUE_APP_START1, BLUE_APP_START2, BLUE_DELAYED_CHECK, POWER_APP_START1, POWER_APP_START2, POWER_DELAYED_CHECK
+		BLUE_APP_START1, BLUE_APP_START2, BLUE_DELAYED_CHECK, POWER_APP_START1, POWER_APP_START2, POWER_DELAYED_CHECK,
+		BLUE_TIMER_START, POWER_TIMER_START
+	}
+
+	companion object {
+		const val longTerm: Long = 10
+		const val shortTerm: Long = 10
 	}
 }
