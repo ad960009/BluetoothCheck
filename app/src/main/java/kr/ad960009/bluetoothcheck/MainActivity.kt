@@ -11,6 +11,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
@@ -34,6 +35,14 @@ class MainActivity : AppCompatActivity() {
 
 		if (!checkAccessibilityPermissions()) {
 			setAccessibilityPermissions();
+		}
+
+		if (!Settings.canDrawOverlays(this)) {
+			intent = Intent(
+				Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+				Uri.parse("package:" + this.packageName)
+			)
+			startActivity(intent)
 		}
 
 		SettingValues = PreferenceValues(this)
@@ -302,7 +311,7 @@ class PreferenceValues(context: Context) {
 		PowerPackage1 = preference.getString(getString(R.string.powerPackageSelect1), "") as String
 		PowerPackage2 = preference.getString(getString(R.string.powerPackageSelect2), "") as String
 		ScreenOff = preference.getBoolean(getString(R.string.screenOff), false)
-		appKilled = preference.getBoolean(getString(R.string.appKilled), false)
+		appKilled = preference.getBoolean(getString(R.string.appKilled), true)
 	}
 
 	fun Save() {

@@ -23,6 +23,16 @@ class MyService : JobService() {
 		val id = p0?.jobId as Int;
 
 		Log.d("ad960009", "jobService $id")
+
+		Log.d("ad960009", "Event.BLUE_APP_START1 ${Event.BLUE_APP_START1.ordinal}")
+		Log.d("ad960009", "Event.BLUE_APP_START2 ${Event.BLUE_APP_START2.ordinal}")
+		Log.d("ad960009", "Event.BLUE_TIMER_START ${Event.BLUE_TIMER_START.ordinal}")
+
+		Log.d("ad960009", "Event.POWER_APP_START1 ${Event.POWER_APP_START1.ordinal}")
+		Log.d("ad960009", "Event.POWER_APP_START2 ${Event.POWER_APP_START2.ordinal}")
+		Log.d("ad960009", "Event.POWER_DELAYED_CHECK ${Event.POWER_DELAYED_CHECK.ordinal}")
+		Log.d("ad960009", "Event.POWER_TIMER_START ${Event.POWER_TIMER_START.ordinal}")
+
 		when (id) {
 			Event.BLUE_APP_START1.ordinal -> {
 				if (SettingValues.appKilled) {
@@ -45,18 +55,20 @@ class MyService : JobService() {
 				if (SettingValues.ScreenOff)
 					ScreenOff()
 			}
-
 			Event.POWER_APP_START1.ordinal -> {
+				Log.d("ad960009", "POWER_APP_START1")
 				if (SettingValues.appKilled) {
 					PowerAppStart1(SettingValues.PowerPackage1)
 				}
 			}
 			Event.POWER_APP_START2.ordinal -> {
+				Log.d("ad960009", "POWER_APP_START2")
 				PowerAppStart2(SettingValues.PowerPackage2)
 				SettingValues.appKilled = false
 				SettingValues.Save()
 			}
 			Event.POWER_DELAYED_CHECK.ordinal -> {
+				Log.d("ad960009", "POWER_DELAYED_CHECK")
 				SettingValues.appKilled = true
 				SettingValues.Save()
 				PowerDelayedCheck(

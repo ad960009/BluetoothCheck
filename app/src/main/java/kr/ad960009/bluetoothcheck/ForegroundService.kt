@@ -39,17 +39,22 @@ class ForegroundService : AccessibilityService() {
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 		if (intent != null) {
-			val pkgName = intent.action
-			if (pkgName == null)
-				return START_STICKY
-			if (pkgName.equals(""))
+			val pkgName = intent.action ?: return START_STICKY
+			if (pkgName == "")
 				return START_STICKY
 
-			val intent = packageManager.getLaunchIntentForPackage(pkgName)
-			if (intent != null) {
-				startActivity(intent)
-				Log.d("ad960009", "Start App $pkgName with ${intent.action}")
-				for (category in intent.categories) {
+			val startIntent = packageManager.getLaunchIntentForPackage(pkgName)
+			if (startIntent != null) {
+				val pendingIntent = PendingIntent.getActivity(
+					this,
+					0,
+					startIntent,
+					PendingIntent.FLAG_UPDATE_CURRENT
+				);
+				pendingIntent.send()
+				//startActivity(intent)
+				Log.d("ad960009", "Start App $pkgName with ${startIntent.action}")
+				for (category in startIntent.categories) {
 					Log.d("ad960009", "\tcategory: $category")
 				}
 				ShowToast("App start: $pkgName")

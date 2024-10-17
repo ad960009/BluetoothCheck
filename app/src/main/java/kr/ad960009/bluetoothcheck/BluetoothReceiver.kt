@@ -16,14 +16,24 @@ import java.util.concurrent.TimeUnit
 class BluetoothReceiver : BroadcastReceiver() {
 	override fun onReceive(context: Context, intent: Intent) {
 		val SettingValues = PreferenceValues(context)
+		val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+		val componentName = ComponentName(context, MyService::class.java)
 
+		Log.d("ad960009", "BluetoothReceiver recv $intent.action")
 		if (Intent.ACTION_BOOT_COMPLETED.equals(intent.action)) {
-			SettingValues.appKilled = false
+			SettingValues.appKilled = true
 			SettingValues.Save()
 
 			val serviceIntent = Intent(context, ForegroundService::class.java)
 			serviceIntent.action = "";
 			context.startService(serviceIntent)
+
+			val job = JobInfo.Builder(MyService.Event.POWER_APP_START1.ordinal, componentName)
+				.setMinimumLatency(TimeUnit.SECONDS.toMillis(1))
+				.setOverrideDeadline(TimeUnit.SECONDS.toMillis(shortTerm * 2))
+				.build()
+			jobScheduler.schedule(job)
+
 			return
 		}
 
@@ -35,15 +45,10 @@ class BluetoothReceiver : BroadcastReceiver() {
 
 		val name = device?.name ?: return
 
-		Log.d("ad960009", "bluetooth recv $action $name")
-
 		if (SettingValues.BluetoothPackage1.isEmpty())
 			return
 		if (!name.equals(SettingValues.BluetoothName))
 			return
-
-		val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-		val componentName = ComponentName(context, MyService::class.java)
 
 		when (action) {
 			BluetoothDevice.ACTION_ACL_CONNECTED -> {
@@ -87,6 +92,7 @@ class BluetoothReceiver : BroadcastReceiver() {
 class PowerConnectReceiver : BroadcastReceiver() {
 	override fun onReceive(context: Context, intent: Intent) {
 
+		Log.d("ad960009", "PowerConnectReceiver recv $intent.action")
 		val action = intent.getAction() ?: return
 
 		val SettingValues = PreferenceValues(context)
@@ -107,7 +113,7 @@ class PowerConnectReceiver : BroadcastReceiver() {
 				if (!SettingValues.RunOnCharged)
 					return
 				val job = JobInfo.Builder(MyService.Event.POWER_APP_START1.ordinal, componentName)
-					.setMinimumLatency(TimeUnit.SECONDS.toMillis(shortTerm))
+					.setMinimumLatency(TimeUnit.SECONDS.toMillis(1))
 					.setOverrideDeadline(TimeUnit.SECONDS.toMillis(shortTerm * 2))
 					.build()
 				jobScheduler.schedule(job)
